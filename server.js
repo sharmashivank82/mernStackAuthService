@@ -1,5 +1,6 @@
 const app = require("./src/app.js");
 const Config = require("./src/config");
+require("reflect-metadata");
 
 const startServer = () => {
   const PORT = Config.PORT;
