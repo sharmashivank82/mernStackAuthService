@@ -1,21 +1,54 @@
 const app = require("../../src/app.js");
 const request = require("supertest");
 
+const UserEntity = require('../../src/entity/User.js');
+const AppDataSource = require('../../src/data-source.js')
+
+const truncateTables = async (connection) => {
+  const entities = connection.entityMetadatas;
+  for (const entity of entities) {
+    const repository = connection.getRepository(entity.name);
+    await repository?.clear();
+  }
+};
+
 describe("App", () => {
-  it("Should return 200 status", async () => {
-    const response = await request(app).get("/auth/register").send();
-    expect(response.statusCode).toBe(200);
+  let dataSource;
+  let userRepo;
+
+  beforeAll(async () => {
+    dataSource = await AppDataSource.initialize();
+     // ✅ use entity object, not "User"
   });
 
-  // it("should persist the user in the database", async() => {
-  //   const userData = {
-  //     firstName: 'shivank',
-  //     lastName: "sharma",
-  //     email: "ss@yopmail.com",
-  //     password: "secret"
-  //   }
+  beforeEach(async () => {
+    await truncateTables(dataSource)
+  });
 
-  //   await request(app).post("/auth/register").send(userData);
+  afterAll(async () => {
+    await dataSource?.close();
+  });
 
-  // })
+  // it("Should return 201 status", async () => {
+  //   const response = await request(app).post("/auth/register").send();
+  //   expect(response.statusCode).toBe(201);
+  // });
+
+  it("should persist the user in the database", async () => {
+    const userData = {
+      firstName: "shivank",
+      lastName: "sharma",
+      email: "ss@yopmail.com",
+      password: "password"
+    };
+
+    // hit the API
+    await request(app).post("/auth/register").send(userData);
+
+    // verify user saved in DB
+    userRepo = dataSource.getRepository(UserEntity);
+    const users = await userRepo.find();
+    expect(users).toHaveLength(1)
+
+  });
 });
