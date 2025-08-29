@@ -29,11 +29,6 @@ describe("App", () => {
     await dataSource?.close();
   });
 
-  // it("Should return 201 status", async () => {
-  //   const response = await request(app).post("/auth/register").send();
-  //   expect(response.statusCode).toBe(201);
-  // });
-
   it("should persist the user in the database", async () => {
     const userData = {
       firstName: "shivank",
