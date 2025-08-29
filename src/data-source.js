@@ -1,17 +1,18 @@
-const { DataSource } = require("typeorm")
+const { DataSource } = require("typeorm");
+const config = require("./config/index");
 
 const AppDataSource = new DataSource({
-    type: "postgres",
-    host: "localhost",
-    port: 5432,
-    username: "test",
-    password: "test",
-    database: "test",
-    synchronize: true,
-    logging: false,
-    entities: [require("./entity/User")],
-    migrations: [],
-    subscribers: [],
-})
+  type: "postgres",
+  host: config.DB_HOST,
+  port: Number(config.DB_PORT),
+  username: config.DB_USERNAME,
+  password: config.DB_PASSWORD,
+  database: config.DB_NAME,
+  synchronize: config.NODE_ENV === "dev" || config.NODE_ENV === "test",
+  logging: false,
+  entities: [require("./entity/User")],
+  migrations: [],
+  subscribers: [],
+});
 
-module.exports = AppDataSource
+module.exports = AppDataSource;

@@ -5,7 +5,7 @@
    "main": "server.js",
    "type": "commonjs",
    "scripts": {
-      "dev": "nodemon server.js",
+      "dev": "cross-env NODE_ENV=dev nodemon server.js",
       "test": "jest --watchAll",
       "start": "node server.js",
       "typeorm": "typeorm"
@@ -14,6 +14,7 @@
    "author": "",
    "license": "ISC",
    "dependencies": {
+      "cross-env": "^10.0.0",
       "dotenv": "^17.2.1",
       "express": "^5.1.0",
       "http-errors": "^2.0.0",
