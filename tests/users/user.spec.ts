@@ -81,8 +81,29 @@ describe("App", () => {
 
     userRepo = dataSource.getRepository(UserEntity);
     const users = await userRepo.find();
-    console.log(users[0].password)
     expect(users[0].password).not.toBe(userData.password);
+  })
+
+  it("should return 400 status code if email is already registered", async () => {
+    const userData = {
+      firstName: "shivank",
+      lastName: "sharma",
+      email: "ss@yopmail.com",
+      password: "password"
+    };
+
+    // Directly save the data in the database without the execute of route
+    userRepo = dataSource.getRepository(UserEntity);
+    await userRepo.save({...userData, role: Roles.CUSTOMER});
+    
+    // hit the API
+    const response = await request(app).post("/auth/register").send(userData);
+
+    const user = await userRepo.find()
+
+    expect(response.statusCode).toBe(400)
+    expect(user).toHaveLength(1)
+
   })
 
 });

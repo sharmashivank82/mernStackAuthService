@@ -14,6 +14,16 @@ class UserService {
   }
 
   async create({ firstName, lastName, email, password }) {
+    // Check email is registered or not before
+    const user = await this.userRepository.findOne({
+      where: { email: email },
+    });
+
+    if (user) {
+      const error = createHttpError(400, "Email is already registered!");
+      throw error;
+    }
+
     // Hashed the password First
     const hashedPassword = await this.HashPassword({ password });
 
