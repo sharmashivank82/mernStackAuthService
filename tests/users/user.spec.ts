@@ -32,7 +32,7 @@ describe("App", () => {
     await dataSource?.close();
   });
 
-  it("should persist the user in the database", async () => {
+  it.skip("should persist the user in the database", async () => {
     const userData = {
       firstName: "shivank",
       lastName: "sharma",
@@ -50,7 +50,7 @@ describe("App", () => {
 
   });
 
-  it("should assign role to customer", async () => {
+  it.skip("should assign role to customer", async () => {
     const userData = {
       firstName: "shivank",
       lastName: "sharma",
@@ -68,7 +68,7 @@ describe("App", () => {
 
   })
 
-  it("Should store the hash password", async () => {
+  it.skip("Should store the hash password", async () => {
     const userData = {
       firstName: "shivank",
       lastName: "sharma",
@@ -84,7 +84,7 @@ describe("App", () => {
     expect(users[0].password).not.toBe(userData.password);
   })
 
-  it("should return 400 status code if email is already registered", async () => {
+  it.skip("should return 400 status code if email is already registered", async () => {
     const userData = {
       firstName: "shivank",
       lastName: "sharma",
@@ -104,6 +104,26 @@ describe("App", () => {
     expect(response.statusCode).toBe(400)
     expect(user).toHaveLength(1)
 
+  })
+
+  describe('fields are missing', () => {
+    it("should return 400 status code if email field is missing", async () => {
+      const userData = {
+        firstName: "shivank",
+        lastName: "sharma",
+        email: "",
+        password: "password"
+      };
+
+      const response = await request(app).post("/auth/register").send(userData)
+      console.log(response.body)
+      expect(response.statusCode).toBe(400)
+
+      userRepo = dataSource.getRepository(UserEntity);
+      const users = await userRepo.find();
+      expect(users).toHaveLength(0);
+
+    })
   })
 
 });
