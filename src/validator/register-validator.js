@@ -5,7 +5,8 @@ const validator = [
     .notEmpty()
     .withMessage("Email is required")
     .isEmail()
-    .withMessage("Not a valid email"),
+    .withMessage("Not a valid email")
+    .trim(),
 ];
 
 module.exports = validator;

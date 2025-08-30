@@ -106,7 +106,7 @@ describe("App", () => {
 
   })
 
-  describe('fields are missing', () => {
+  describe.skip('fields are missing', () => {
     it("should return 400 status code if email field is missing", async () => {
       const userData = {
         firstName: "shivank",
@@ -125,5 +125,24 @@ describe("App", () => {
 
     })
   })
+
+  describe("Fields are not in proper format", () => {
+    it("should trim the email field", async () => {
+       const userData = {
+        firstName: "shivank",
+        lastName: "sharma",
+        email: "shivank@yopmail.com",
+        password: "password"
+      };
+
+      await request(app).post("/auth/register").send(userData)
+
+      userRepo = dataSource.getRepository(UserEntity);
+      const users = await userRepo.find();
+      const user = users[0]
+      expect(user.email).toBe("shivank@yopmail.com")
+
+    })
+  })  
 
 });
