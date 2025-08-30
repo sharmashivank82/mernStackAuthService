@@ -1,3 +1,5 @@
+import Roles from "../../src/constants";
+
 const app = require("../../src/app.js");
 const request = require("supertest");
 
@@ -22,7 +24,9 @@ describe("App", () => {
   });
 
   beforeEach(async () => {
-    await truncateTables(dataSource)
+    await dataSource.dropDatabase();
+    await dataSource.synchronize();
+    // await truncateTables(dataSource)
   });
 
   afterAll(async () => {
@@ -46,4 +50,23 @@ describe("App", () => {
     expect(users).toHaveLength(1)
 
   });
+
+  it("should assign role to customer", async () => {
+    const userData = {
+      firstName: "shivank",
+      lastName: "sharma",
+      email: "ss@yopmail.com",
+      password: "password"
+    };
+
+    // hit the API
+    await request(app).post("/auth/register").send(userData);
+
+    userRepo = dataSource.getRepository(UserEntity);
+    const users = await userRepo.find();
+    expect(users[0]).toHaveProperty('role')
+    expect(users[0].role).toBe(Roles.CUSTOMER)
+
+  })
+
 });
