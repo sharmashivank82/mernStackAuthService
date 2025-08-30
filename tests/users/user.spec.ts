@@ -1,5 +1,4 @@
-import Roles from "../../src/constants";
-
+const Roles =  require("../../src/constants");
 const app = require("../../src/app.js");
 const request = require("supertest");
 
@@ -67,6 +66,23 @@ describe("App", () => {
     expect(users[0]).toHaveProperty('role')
     expect(users[0].role).toBe(Roles.CUSTOMER)
 
+  })
+
+  it("Should store the hash password", async () => {
+    const userData = {
+      firstName: "shivank",
+      lastName: "sharma",
+      email: "ss@yopmail.com",
+      password: "password"
+    };
+
+    // hit the API
+    await request(app).post("/auth/register").send(userData);
+
+    userRepo = dataSource.getRepository(UserEntity);
+    const users = await userRepo.find();
+    console.log(users[0].password)
+    expect(users[0].password).not.toBe(userData.password);
   })
 
 });

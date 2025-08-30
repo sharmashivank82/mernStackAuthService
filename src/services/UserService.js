@@ -1,5 +1,6 @@
 const createHttpError = require("http-errors");
 const Roles = require("../constants");
+const bcrypt = require("bcrypt");
 
 class UserService {
   userRepository;
@@ -7,13 +8,21 @@ class UserService {
     this.userRepository = userRepository;
   }
 
+  async HashPassword({ password }) {
+    const saltRound = 10;
+    return await bcrypt.hash(password, saltRound);
+  }
+
   async create({ firstName, lastName, email, password }) {
+    // Hashed the password First
+    const hashedPassword = await this.HashPassword({ password });
+
     try {
       return await this.userRepository.save({
         firstName,
         lastName,
         email,
-        password,
+        password: hashedPassword,
         role: Roles.CUSTOMER,
       });
     } catch (err) {
