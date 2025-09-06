@@ -1,15 +1,26 @@
-const Roles =  require("../../src/constants");
+const Roles = require("../../src/constants/index.js");
 const app = require("../../src/app.js");
 const request = require("supertest");
 
-const UserEntity = require('../../src/entity/User.js');
-const AppDataSource = require('../../src/data-source.js')
+const UserEntity = require("../../src/entity/User.js");
+const AppDataSource = require("../../src/data-source.js");
 
-const truncateTables = async (connection) => {
-  const entities = connection.entityMetadatas;
-  for (const entity of entities) {
-    const repository = connection.getRepository(entity.name);
-    await repository?.clear();
+const isJwt = (token) => {
+  if (!token) return false;
+
+  const parts = token.split(".");
+  if (parts.length !== 3) return false;
+
+  // each jwt parts is a base64 string
+  try {
+    parts.forEach((part) => {
+      // Buffer is a global object
+      // we try to convert base64 string to utf-8 if it's done then it means it's a base 64 err
+      Buffer.from(part, "base64").toString("utf-8");
+    });
+    return true;
+  } catch (err) {
+    return false;
   }
 };
 
@@ -19,7 +30,7 @@ describe("App", () => {
 
   beforeAll(async () => {
     dataSource = await AppDataSource.initialize();
-     // ✅ use entity object, not "User"
+    // ✅ use entity object, not "User"
   });
 
   beforeEach(async () => {
@@ -37,7 +48,7 @@ describe("App", () => {
       firstName: "shivank",
       lastName: "sharma",
       email: "ss@yopmail.com",
-      password: "password"
+      password: "password",
     };
 
     // hit the API
@@ -46,8 +57,7 @@ describe("App", () => {
     // verify user saved in DB
     userRepo = dataSource.getRepository(UserEntity);
     const users = await userRepo.find();
-    expect(users).toHaveLength(1)
-
+    expect(users).toHaveLength(1);
   });
 
   it.skip("should assign role to customer", async () => {
@@ -55,7 +65,7 @@ describe("App", () => {
       firstName: "shivank",
       lastName: "sharma",
       email: "ss@yopmail.com",
-      password: "password"
+      password: "password",
     };
 
     // hit the API
@@ -63,17 +73,16 @@ describe("App", () => {
 
     userRepo = dataSource.getRepository(UserEntity);
     const users = await userRepo.find();
-    expect(users[0]).toHaveProperty('role')
-    expect(users[0].role).toBe(Roles.CUSTOMER)
-
-  })
+    expect(users[0]).toHaveProperty("role");
+    expect(users[0].role).toBe(Roles.CUSTOMER);
+  });
 
   it.skip("Should store the hash password", async () => {
     const userData = {
       firstName: "shivank",
       lastName: "sharma",
       email: "ss@yopmail.com",
-      password: "password"
+      password: "password",
     };
 
     // hit the API
@@ -82,67 +91,96 @@ describe("App", () => {
     userRepo = dataSource.getRepository(UserEntity);
     const users = await userRepo.find();
     expect(users[0].password).not.toBe(userData.password);
-  })
+  });
 
   it.skip("should return 400 status code if email is already registered", async () => {
     const userData = {
       firstName: "shivank",
       lastName: "sharma",
       email: "ss@yopmail.com",
-      password: "password"
+      password: "password",
     };
 
     // Directly save the data in the database without the execute of route
     userRepo = dataSource.getRepository(UserEntity);
-    await userRepo.save({...userData, role: Roles.CUSTOMER});
-    
+    await userRepo.save({ ...userData, role: Roles.CUSTOMER });
+
     // hit the API
     const response = await request(app).post("/auth/register").send(userData);
 
-    const user = await userRepo.find()
+    const user = await userRepo.find();
 
-    expect(response.statusCode).toBe(400)
-    expect(user).toHaveLength(1)
+    expect(response.statusCode).toBe(400);
+    expect(user).toHaveLength(1);
+  });
 
-  })
-
-  describe.skip('fields are missing', () => {
+  describe.skip("fields are missing", () => {
     it("should return 400 status code if email field is missing", async () => {
       const userData = {
         firstName: "shivank",
         lastName: "sharma",
         email: "",
-        password: "password"
+        password: "password",
       };
 
-      const response = await request(app).post("/auth/register").send(userData)
-      console.log(response.body)
-      expect(response.statusCode).toBe(400)
+      const response = await request(app).post("/auth/register").send(userData);
+      console.log(response.body);
+      expect(response.statusCode).toBe(400);
 
       userRepo = dataSource.getRepository(UserEntity);
       const users = await userRepo.find();
       expect(users).toHaveLength(0);
+    });
+  });
 
-    })
-  })
-
-  describe("Fields are not in proper format", () => {
+  describe.skip("Fields are not in proper format", () => {
     it("should trim the email field", async () => {
-       const userData = {
+      const userData = {
         firstName: "shivank",
         lastName: "sharma",
         email: "shivank@yopmail.com",
-        password: "password"
+        password: "password",
       };
 
-      await request(app).post("/auth/register").send(userData)
+      await request(app).post("/auth/register").send(userData);
 
       userRepo = dataSource.getRepository(UserEntity);
       const users = await userRepo.find();
-      const user = users[0]
-      expect(user.email).toBe("shivank@yopmail.com")
+      const user = users[0];
+      expect(user.email).toBe("shivank@yopmail.com");
+    });
+  });
 
-    })
-  })  
+  describe("json web token test", () => {
+    it("should return the access token and refresh token inside a cookie", async () => {
+      const userData = {
+        firstName: "shivank",
+        lastName: "sharma",
+        email: "shivank@yopmail.com",
+        password: "password",
+      };
 
+      const response = await request(app).post("/auth/register").send(userData);
+
+      let accessToken;
+      let refreshToken;
+
+      const cookies = response.headers["set-cookie"] || [];
+      cookies.forEach((cookie) => {
+        if (cookie.startsWith("accessToken=")) {
+          accessToken = cookie.split(";")[0].split("=")[1];
+        }
+
+        if (cookie.startsWith("refreshToken=")) {
+          refreshToken = cookie.split(";")[0].split("=")[1];
+        }
+      });
+
+      expect(accessToken).not.toBeUndefined();
+      expect(refreshToken).not.toBeUndefined();
+
+      expect(isJwt(accessToken)).toBeTruthy();
+      expect(isJwt(refreshToken)).toBeTruthy();
+    });
+  });
 });
