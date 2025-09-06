@@ -4,6 +4,10 @@ const jwt = require("jsonwebtoken");
 const fs = require("fs");
 const path = require("path");
 const createHttpError = require("http-errors");
+const { REFRESH_TOKEN_SECRET } = require("../config");
+
+const AppDataSource = require("../../src/data-source.js");
+const RefreshTokenEntity = require("../../src/entity/RefreshToken.js");
 
 class AuthController {
   userService;
@@ -55,8 +59,21 @@ class AuthController {
         issuer: "auth-service", // who issue this token
       });
 
+      // persist the token
+      const MS_IN_YEAR = 1000 * 60 * 60 * 24 * 365; // 1 year
+      const refreshTokenRepo = AppDataSource.getRepository(RefreshTokenEntity);
+      const newRefreshToken = await refreshTokenRepo.save({
+        userId: user,
+        expireAt: new Date(Date.now() + MS_IN_YEAR),
+      });
+
       // const accessToken = "12345";
-      const refreshToken = "12345";
+      const refreshToken = jwt.sign(payload, REFRESH_TOKEN_SECRET, {
+        algorithm: "HS256",
+        expiresIn: "1y",
+        issuer: "auth-service",
+        jwtid: `${newRefreshToken.id}`, // this variable expect string
+      });
 
       res.cookie("accessToken", accessToken, {
         domain: "localhost",
@@ -68,7 +85,7 @@ class AuthController {
       res.cookie("refreshToken", refreshToken, {
         domain: "localhost",
         sameSite: "strict",
-        maxAge: 1000 * 60 * 60 * 24, // 1 day
+        maxAge: 1000 * 60 * 60 * 24 * 365, // 1 day
         httpOnly: true,
       });
 

@@ -3,6 +3,8 @@ const app = require("../../src/app.js");
 const request = require("supertest");
 
 const UserEntity = require("../../src/entity/User.js");
+const RefreshTokenEntity = require("../../src/entity/RefreshToken.js");
+
 const AppDataSource = require("../../src/data-source.js");
 
 const isJwt = (token) => {
@@ -181,6 +183,41 @@ describe("App", () => {
 
       expect(isJwt(accessToken)).toBeTruthy();
       expect(isJwt(refreshToken)).toBeTruthy();
+    });
+
+    it("should store the refresh token in the database", async () => {
+      const userData = {
+        firstName: "shivank",
+        lastName: "sharma",
+        email: "shivank@yopmail.com",
+        password: "password",
+      };
+
+      const response = await request(app).post("/auth/register").send(userData);
+
+      const refreshTokenRepo = dataSource.getRepository(RefreshTokenEntity);
+
+      // const tokens = await refreshTokenRepo
+      //   .createQueryBuilder("refreshToken")
+      //   .where("refreshToken.userId = :userDataId", {
+      //     userDataId: response.body.user.id,
+      //   })
+      //   .getMany();
+
+      const tokens = await refreshTokenRepo
+        .createQueryBuilder("refreshToken")
+        .leftJoin("refreshToken.userId", "userDetails") // join the relation
+        .where("userDetails.id = :userDataId", {
+          userDataId: response.body.user.id,
+        })
+        .getMany();
+
+      // userDetails, userDataId <--- These are act like a variables only
+
+      console.log({ tokens });
+
+      expect(tokens).toHaveLength(1);
+      // const refreshToken = await refreshTokenRepo.find();
     });
   });
 });
