@@ -1,12 +1,15 @@
 const { validationResult } = require("express-validator");
+const createHttpError = require("http-errors");
 
 class AuthController {
   userService;
   tokenService;
+  credentialService;
 
-  constructor(userServices, tokenService) {
+  constructor(userServices, tokenService, credentialService) {
     this.userService = userServices;
     this.tokenService = tokenService;
+    this.credentialService = credentialService;
   }
 
   async addRegister(req, res, next) {
@@ -57,6 +60,74 @@ class AuthController {
       });
 
       res.status(201).json({ user });
+    } catch (err) {
+      next(err);
+      return;
+    }
+  }
+
+  async login(req, res, next) {
+    try {
+      const result = validationResult(req);
+      if (!result.isEmpty()) {
+        return res.status(400).json({ errors: result.array() });
+      }
+
+      const { email, password } = req.body;
+
+      // check email and then compare password then generate token and add token in cookies and return response
+
+      const user = await this.userService.findByEmail(email);
+      if (!user) {
+        const error = createHttpError(400, "Email or password doesn't match");
+        next(error);
+        return;
+      }
+
+      const isPasswordMatch = await this.credentialService.comparePassword(
+        password,
+        user.password
+      );
+
+      if (!isPasswordMatch) {
+        const error = createHttpError(400, "Email or password doesn't match");
+        next(error);
+        return;
+      }
+
+      // Now password match create access/refresh token and store them in cookie and give 200 response
+      const payload = {
+        sub: `${user.id}`,
+        role: user.role,
+      };
+
+      // use RS256 Algorithm for public/private key
+      const accessToken = this.tokenService.generateAccessToken(payload);
+
+      // persist the token
+      const newRefreshToken = await this.tokenService.persistToken(user);
+
+      // Used HS256 Algo
+      const refreshToken = this.tokenService.generateRefreshToken({
+        ...payload,
+        id: newRefreshToken.id,
+      });
+
+      res.cookie("accessToken", accessToken, {
+        domain: "localhost",
+        sameSite: "strict",
+        maxAge: 1000 * 60 * 60, // 60
+        httpOnly: true,
+      });
+
+      res.cookie("refreshToken", refreshToken, {
+        domain: "localhost",
+        sameSite: "strict",
+        maxAge: 1000 * 60 * 60 * 24 * 365, // 1 day
+        httpOnly: true,
+      });
+
+      res.status(201).json({ id: user.id });
     } catch (err) {
       next(err);
       return;

@@ -2,9 +2,12 @@ const express = require("express");
 const router = express.Router();
 
 const registerValidator = require("../validator/register-validator");
+const loginValidator = require("../validator/login-validator");
+
 const { AuthController } = require("../controller/AuthController");
 const { UserService } = require("../services/UserService");
 const { TokenService } = require("../services/TokenService");
+const { CredentialService } = require("../services/CredentialService");
 
 const AppDataSource = require("../data-source");
 const UserEntity = require("../entity/User");
@@ -15,11 +18,20 @@ const tokenRepository = AppDataSource.getRepository(TokenEntity);
 
 const userService = new UserService(userRepository);
 const tokenService = new TokenService(tokenRepository);
+const credentialService = new CredentialService();
 
-const authController = new AuthController(userService, tokenService);
+const authController = new AuthController(
+  userService,
+  tokenService,
+  credentialService
+);
 
 router.post("/register", registerValidator, (req, res, next) =>
   authController.addRegister(req, res, next)
+);
+
+router.post("/login", loginValidator, (req, res, next) =>
+  authController.login(req, res, next)
 );
 
 module.exports = router;
