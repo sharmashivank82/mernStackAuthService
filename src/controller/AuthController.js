@@ -1,19 +1,15 @@
 const { validationResult } = require("express-validator");
-const jwt = require("jsonwebtoken");
-
-const fs = require("fs");
-const path = require("path");
-const createHttpError = require("http-errors");
-const { REFRESH_TOKEN_SECRET } = require("../config");
 
 const AppDataSource = require("../../src/data-source.js");
 const RefreshTokenEntity = require("../../src/entity/RefreshToken.js");
 
 class AuthController {
   userService;
+  tokenService;
 
-  constructor(userServices) {
+  constructor(userServices, tokenService) {
     this.userService = userServices;
+    this.tokenService = tokenService;
   }
 
   async addRegister(req, res, next) {
@@ -32,32 +28,14 @@ class AuthController {
         password,
       });
 
-      let privateKey;
-      try {
-        // return the buffer
-        privateKey = fs.readFileSync(
-          path.join(__dirname, `../../certs/private.pem`)
-        );
-      } catch (err) {
-        const error = createHttpError(
-          500,
-          "Error while reading the private key"
-        );
-        next(error);
-        return;
-      }
-
       const payload = {
         sub: `${user.id}`,
         role: user.role,
       };
 
       // use RS256 Algorithm for public/private key
-      const accessToken = jwt.sign(payload, privateKey, {
-        algorithm: "RS256",
-        expiresIn: "1h",
-        issuer: "auth-service", // who issue this token
-      });
+      const accessToken = this.tokenService.generateAccessToken(payload);
+      console.log({ accessToken });
 
       // persist the token
       const MS_IN_YEAR = 1000 * 60 * 60 * 24 * 365; // 1 year
@@ -67,12 +45,9 @@ class AuthController {
         expireAt: new Date(Date.now() + MS_IN_YEAR),
       });
 
-      // const accessToken = "12345";
-      const refreshToken = jwt.sign(payload, REFRESH_TOKEN_SECRET, {
-        algorithm: "HS256",
-        expiresIn: "1y",
-        issuer: "auth-service",
-        jwtid: `${newRefreshToken.id}`, // this variable expect string
+      const refreshToken = this.tokenService.generateRefreshToken({
+        ...payload,
+        id: newRefreshToken.id,
       });
 
       res.cookie("accessToken", accessToken, {
