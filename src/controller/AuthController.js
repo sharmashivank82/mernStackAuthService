@@ -1,8 +1,5 @@
 const { validationResult } = require("express-validator");
 
-const AppDataSource = require("../../src/data-source.js");
-const RefreshTokenEntity = require("../../src/entity/RefreshToken.js");
-
 class AuthController {
   userService;
   tokenService;
@@ -35,16 +32,11 @@ class AuthController {
 
       // use RS256 Algorithm for public/private key
       const accessToken = this.tokenService.generateAccessToken(payload);
-      console.log({ accessToken });
 
       // persist the token
-      const MS_IN_YEAR = 1000 * 60 * 60 * 24 * 365; // 1 year
-      const refreshTokenRepo = AppDataSource.getRepository(RefreshTokenEntity);
-      const newRefreshToken = await refreshTokenRepo.save({
-        userId: user,
-        expireAt: new Date(Date.now() + MS_IN_YEAR),
-      });
+      const newRefreshToken = await this.tokenService.persistToken(user);
 
+      // Used HS256 Algo
       const refreshToken = this.tokenService.generateRefreshToken({
         ...payload,
         id: newRefreshToken.id,

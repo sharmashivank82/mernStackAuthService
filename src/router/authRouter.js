@@ -8,11 +8,13 @@ const { TokenService } = require("../services/TokenService");
 
 const AppDataSource = require("../data-source");
 const UserEntity = require("../entity/User");
+const TokenEntity = require("../entity/RefreshToken");
 
 const userRepository = AppDataSource.getRepository(UserEntity);
+const tokenRepository = AppDataSource.getRepository(TokenEntity);
 
 const userService = new UserService(userRepository);
-const tokenService = new TokenService(userRepository);
+const tokenService = new TokenService(tokenRepository);
 
 const authController = new AuthController(userService, tokenService);
 

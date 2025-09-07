@@ -2,12 +2,13 @@ const jwt = require("jsonwebtoken");
 const fs = require("fs");
 const path = require("path");
 const createHttpError = require("http-errors");
+
 const { REFRESH_TOKEN_SECRET } = require("../config");
 
 class TokenService {
-  userRepository;
-  constructor(userRepository) {
-    this.userRepository = userRepository;
+  tokenRepository;
+  constructor(tokenRepository) {
+    this.tokenRepository = tokenRepository;
   }
 
   generateAccessToken(payload) {
@@ -40,6 +41,15 @@ class TokenService {
     });
 
     return refreshToken;
+  }
+
+  async persistToken(user) {
+    const MS_IN_YEAR = 1000 * 60 * 60 * 24 * 365; // 1 year
+    const newRefreshToken = await this.tokenRepository.save({
+      userId: user,
+      expireAt: new Date(Date.now() + MS_IN_YEAR),
+    });
+    return newRefreshToken;
   }
 }
 
