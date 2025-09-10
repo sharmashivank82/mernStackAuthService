@@ -133,6 +133,16 @@ class AuthController {
       return;
     }
   }
+
+  async self(req, res, next) {
+    try {
+      const user = await this.userService.findById(req.auth.sub);
+      return res.status(200).json(user);
+    } catch (err) {
+      next(err);
+      return;
+    }
+  }
 }
 
 module.exports = { AuthController };

@@ -1,8 +1,10 @@
 const express = require("express");
+const cookieParser = require("cookie-parser");
 const app = express();
 const AuthRouter = require("./router/authRouter");
 
 app.use(express.json());
+app.use(cookieParser());
 
 app.get("/", async (req, res) => {
   res.send("Welcome to the Auth Service");

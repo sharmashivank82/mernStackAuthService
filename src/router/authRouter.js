@@ -12,6 +12,7 @@ const { CredentialService } = require("../services/CredentialService");
 const AppDataSource = require("../data-source");
 const UserEntity = require("../entity/User");
 const TokenEntity = require("../entity/RefreshToken");
+const Authenticate = require("../middlewares/Authenticate");
 
 const userRepository = AppDataSource.getRepository(UserEntity);
 const tokenRepository = AppDataSource.getRepository(TokenEntity);
@@ -32,6 +33,10 @@ router.post("/register", registerValidator, (req, res, next) =>
 
 router.post("/login", loginValidator, (req, res, next) =>
   authController.login(req, res, next)
+);
+
+router.get("/self", Authenticate, (req, res, next) =>
+  authController.self(req, res, next)
 );
 
 module.exports = router;

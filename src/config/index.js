@@ -12,6 +12,7 @@ const {
   DB_NAME,
   DB_PASSWORD,
   REFRESH_TOKEN_SECRET,
+  JWKS_URI,
 } = process.env;
 
 module.exports = {
@@ -23,4 +24,5 @@ module.exports = {
   DB_NAME,
   DB_PASSWORD,
   REFRESH_TOKEN_SECRET,
+  JWKS_URI,
 };

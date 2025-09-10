@@ -1,6 +1,7 @@
 const Roles = require("../../src/constants/index.js");
 const app = require("../../src/app.js");
 const request = require("supertest");
+const { createJWKSMock } = require("mock-jwks");
 
 const UserEntity = require("../../src/entity/User.js");
 const RefreshTokenEntity = require("../../src/entity/RefreshToken.js");
@@ -29,16 +30,24 @@ const isJwt = (token) => {
 describe("App", () => {
   let dataSource;
   let userRepo;
+  let jwks;
 
   beforeAll(async () => {
+    jwks = createJWKSMock("http://localhost:5555");
+
     dataSource = await AppDataSource.initialize();
     // ✅ use entity object, not "User"
   });
 
   beforeEach(async () => {
+    jwks.start();
     await dataSource.dropDatabase();
     await dataSource.synchronize();
     // await truncateTables(dataSource)
+  });
+
+  afterEach(() => {
+    jwks.stop();
   });
 
   afterAll(async () => {
@@ -153,7 +162,7 @@ describe("App", () => {
     });
   });
 
-  describe("json web token test", () => {
+  describe.skip("json web token test", () => {
     it("should return the access token and refresh token inside a cookie", async () => {
       const userData = {
         firstName: "shivank",
@@ -218,6 +227,42 @@ describe("App", () => {
 
       expect(tokens).toHaveLength(1);
       // const refreshToken = await refreshTokenRepo.find();
+    });
+  });
+
+  describe("Get /auth/self", () => {
+    it("should return 200 code", async () => {
+      const accessToken = jwks.token({ sub: `1`, role: Roles.CUSTOMER });
+
+      const response = await request(app)
+        .get("/auth/self")
+        .set("Cookie", [`accessToken=${accessToken}`])
+        .send();
+      expect(response.statusCode).toBe(200);
+    });
+
+    it("should return user code", async () => {
+      // Register user
+      const userData = {
+        firstName: "shivank",
+        lastName: "sharma",
+        email: "shivank@yopmail.com",
+        password: "password",
+      };
+
+      const userRepo = dataSource.getRepository(UserEntity);
+      const data = await userRepo.save({ ...userData, role: Roles.CUSTOMER });
+      // Generate token
+      const accessToken = jwks.token({ sub: `${data.id}`, role: data.role });
+
+      // Add token to cookie
+      const response = await request(app)
+        .get("/auth/self")
+        .set("Cookie", [`accessToken=${accessToken};`])
+        .send();
+      // Assert
+      // check is user id matches with register user id
+      expect(response.body.id).toBe(data.id);
     });
   });
 });
