@@ -137,7 +137,7 @@ class AuthController {
   async self(req, res, next) {
     try {
       const user = await this.userService.findById(req.auth.sub);
-      return res.status(200).json(user);
+      return res.status(200).json({ ...user, password: undefined });
     } catch (err) {
       next(err);
       return;

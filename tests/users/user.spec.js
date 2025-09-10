@@ -263,6 +263,8 @@ describe("App", () => {
       // Assert
       // check is user id matches with register user id
       expect(response.body.id).toBe(data.id);
+      console.log({ response: response.body });
+      expect(response.body).not.toHaveProperty("password");
     });
   });
 });
