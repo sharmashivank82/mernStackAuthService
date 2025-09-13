@@ -15,6 +15,7 @@ const TokenEntity = require("../entity/RefreshToken");
 
 const Authenticate = require("../middlewares/Authenticate");
 const ValidateRefreshToken = require("../middlewares/ValidateRefreshToken");
+const ParseRefreshToken = require("../middlewares/ParseRefreshToken");
 
 const userRepository = AppDataSource.getRepository(UserEntity);
 const tokenRepository = AppDataSource.getRepository(TokenEntity);
@@ -43,6 +44,10 @@ router.get("/self", Authenticate, (req, res, next) =>
 
 router.post("/refresh", ValidateRefreshToken, (req, res, next) =>
   authController.refresh(req, res, next)
+);
+
+router.post("/logout", [Authenticate, ParseRefreshToken], (req, res, next) =>
+  authController.logout(req, res, next)
 );
 
 module.exports = router;

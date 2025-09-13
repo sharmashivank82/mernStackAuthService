@@ -196,6 +196,20 @@ class AuthController {
       next(err);
     }
   }
+
+  async logout(req, res, next) {
+    try {
+      // delete the refresh token
+      await this.tokenService.deleteRefreshToken(parseInt(req.auth.id));
+      // clear the cookies
+      res.clearCookie("accessToken");
+      res.clearCookie("refreshToken");
+
+      res.json({});
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 module.exports = { AuthController };
