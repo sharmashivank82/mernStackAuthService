@@ -30,5 +30,10 @@ module.exports = new EntitySchema({
     role: {
       type: "varchar",
     },
+
+    createdAt: {
+      type: "timestamp",
+      createDate: true, // auto set on insert
+    },
   },
 });

@@ -8,10 +8,10 @@ const AppDataSource = new DataSource({
   username: config.DB_USERNAME,
   password: config.DB_PASSWORD,
   database: config.DB_NAME,
-  synchronize: true,
+  synchronize: false,
   logging: false,
   entities: [require("./entity/User"), require("./entity/RefreshToken")],
-  migrations: [],
+  migrations: [__dirname + "/migration/*.js"],
   subscribers: [],
 });
 

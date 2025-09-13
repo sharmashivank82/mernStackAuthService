@@ -1,7 +1,9 @@
 const { config } = require("dotenv");
 const path = require("path");
 
-config({ path: path.join(__dirname, `../../.env.${process.env.NODE_ENV}`) });
+config({
+  path: path.join(__dirname, `../../.env.${process.env.NODE_ENV || "dev"}`),
+});
 
 const {
   PORT,
