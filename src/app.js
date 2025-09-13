@@ -2,6 +2,7 @@ const express = require("express");
 const cookieParser = require("cookie-parser");
 const app = express();
 const AuthRouter = require("./router/authRouter");
+const TenantsRouter = require("./router/tenantRouter");
 
 // app.use(express.static("public")); // by default server doesn't allow .files they consider those files are hidden
 app.use(express.static("public", { dotfiles: "allow" }));
@@ -13,6 +14,7 @@ app.get("/", async (req, res) => {
 });
 
 app.use("/auth", AuthRouter);
+app.use("/tenants", TenantsRouter);
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 app.use((err, req, res, next) => {

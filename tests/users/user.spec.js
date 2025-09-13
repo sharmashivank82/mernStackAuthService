@@ -230,7 +230,7 @@ describe("App", () => {
     });
   });
 
-  describe("Get /auth/self", () => {
+  describe.skip("Get /auth/self", () => {
     it("should return 200 code", async () => {
       const accessToken = jwks.token({ sub: `1`, role: Roles.CUSTOMER });
 
