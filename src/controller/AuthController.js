@@ -143,6 +143,59 @@ class AuthController {
       return;
     }
   }
+
+  async refresh(req, res, next) {
+    try {
+      // Now password match create access/refresh token and store them in cookie and give 200 response
+      const payload = {
+        sub: req.auth.sub,
+        role: req.auth.role,
+      };
+
+      // use RS256 Algorithm for public/private key
+      const accessToken = this.tokenService.generateAccessToken(payload);
+
+      const user = await this.userService.findById(req.auth.sub);
+      if (!user) {
+        const error = createHttpError(
+          400,
+          "User with the token could not find"
+        );
+        next(error);
+        return;
+      }
+
+      // persist the token
+      const newRefreshToken = await this.tokenService.persistToken(user);
+
+      // Delete old refresh token
+      await this.tokenService.deleteRefreshToken(parseInt(req.auth.id));
+
+      // Used HS256 Algo
+      const refreshToken = this.tokenService.generateRefreshToken({
+        ...payload,
+        id: newRefreshToken.id,
+      });
+
+      res.cookie("accessToken", accessToken, {
+        domain: "localhost",
+        sameSite: "strict",
+        maxAge: 1000 * 60 * 60, // 60
+        httpOnly: true,
+      });
+
+      res.cookie("refreshToken", refreshToken, {
+        domain: "localhost",
+        sameSite: "strict",
+        maxAge: 1000 * 60 * 60 * 24 * 365, // 1 day
+        httpOnly: true,
+      });
+
+      res.status(200).json({});
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 module.exports = { AuthController };

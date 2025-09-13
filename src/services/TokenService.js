@@ -51,6 +51,12 @@ class TokenService {
     });
     return newRefreshToken;
   }
+
+  async deleteRefreshToken(tokenId) {
+    try {
+      return await this.tokenRepository.delete({ id: tokenId });
+    } catch (err) {}
+  }
 }
 
 module.exports = { TokenService };

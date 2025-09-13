@@ -16,7 +16,11 @@ module.exports = expressjwt({
       if (token) return token;
     }
 
-    const { accessToken } = req.cookies;
-    return accessToken;
+    if (req.cookies) {
+      const { accessToken } = req.cookies;
+      return accessToken;
+    }
+
+    return null;
   },
 });
