@@ -36,4 +36,12 @@ module.exports = new EntitySchema({
       createDate: true, // auto set on insert
     },
   },
+  relations: {
+    tenant: {
+      target: "TenantDetails",
+      type: "many-to-one", // multiple user belongs to a one tenant
+      joinTable: true, // add userId column
+      cascade: true, // if user deleted then it's records in this table were also deleted
+    },
+  },
 });

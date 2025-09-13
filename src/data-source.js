@@ -10,7 +10,12 @@ const AppDataSource = new DataSource({
   database: config.DB_NAME,
   synchronize: false,
   logging: false,
-  entities: [require("./entity/User"), require("./entity/RefreshToken")],
+  // require("./entity/*.js") same like a migration file
+  entities: [
+    require("./entity/User"),
+    require("./entity/RefreshToken"),
+    require("./entity/Tenant"),
+  ],
   migrations: [__dirname + "/migration/*.js"],
   subscribers: [],
 });

@@ -9,10 +9,10 @@
       "test": "cross-env NODE_ENV=dev jest --watchAll",
       "start": "node server.js",
       "typeorm": "typeorm",
-      "migration:generate": "typeorm migration:generate src/migration/rename -d src/data-source.js --outputJs",
+      "migration:generate": "typeorm migration:generate src/migration/add-tenant-id-foreign-key -d src/data-source.js --outputJs",
       "migration:run": "typeorm migration:run -d src/data-source.js",
       "migration:revert": "typeorm migration:revert -d src/data-source.js",
-      "migration:create": "typeorm migration:create src/migration/rename --outputJs"
+      "migration:create": "typeorm migration:create src/migration/add-tenant-id-foreign-key --outputJs"
    },
    "keywords": [],
    "author": "",
