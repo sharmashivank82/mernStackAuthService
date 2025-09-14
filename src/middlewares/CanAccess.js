@@ -1,9 +1,7 @@
 const createHttpError = require("http-errors");
 
 const CanAccess = (roles = []) => {
-  console.log({ roles });
   return (req, res, next) => {
-    console.log(req.auth);
     const roleFromToken = req.auth.role;
     if (roles.includes(roleFromToken)) next();
     else {

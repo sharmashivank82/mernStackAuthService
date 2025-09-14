@@ -13,7 +13,7 @@ class UserService {
     return await bcrypt.hash(password, saltRound);
   }
 
-  async create({ firstName, lastName, email, password }) {
+  async create({ firstName, lastName, email, password, role }) {
     // Check email is registered or not before
     const user = await this.userRepository.findOne({
       where: { email: email },
@@ -33,7 +33,7 @@ class UserService {
         lastName,
         email,
         password: hashedPassword,
-        role: Roles.CUSTOMER,
+        role: role || Roles.CUSTOMER,
       });
     } catch (err) {
       const error = createHttpError(

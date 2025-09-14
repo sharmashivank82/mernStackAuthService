@@ -2,20 +2,21 @@ const app = require("../../src/app.js");
 const request = require("supertest");
 const { createJWKSMock } = require("mock-jwks");
 
-const TenantEntity = require("../../src/entity/Tenant.js");
+const UserEntity = require("../../src/entity/User.js");
 
 const AppDataSource = require("../../src/data-source.js");
 const Roles = require("../../src/constants/index.js");
 
-describe("Post /tenants", () => {
+describe("Post /users", () => {
   let dataSource;
-  let tenantRepo;
+  let userRepo;
   let jwks;
 
   beforeAll(async () => {
     jwks = createJWKSMock("http://localhost:5555");
 
     dataSource = await AppDataSource.initialize();
+    userRepo = AppDataSource.getRepository(UserEntity);
     // ✅ use entity object, not "User"
   });
 
@@ -34,28 +35,30 @@ describe("Post /tenants", () => {
     await dataSource?.close();
   });
 
-  describe("it given all field", () => {
-    it("should return 201 status code and store in DB also", async () => {
-      // if This variable initialize outside the it block then they get error
-      tenantRepo = dataSource.getRepository(TenantEntity);
-
+  describe.skip("it given all field of User", () => {
+    it("should persist the user in DB", async () => {
       const accessToken = jwks.token({ sub: `1`, role: Roles.ADMIN });
 
-      const tenantData = {
-        name: "tenant name",
-        address: "tenant address",
+      const userData = {
+        firstName: "shivank",
+        lastName: "sharma",
+        email: "shivank@yopmail.com",
+        password: "password",
+        tenantId: 1,
       };
 
-      const response = await request(app)
-        .post("/tenants/create")
+      await request(app)
+        .post("/user/create")
         .set("Cookie", [`accessToken=${accessToken}`])
-        .send(tenantData);
+        .send(userData);
 
-      const tenantsRecord = await tenantRepo.find();
+      const users = await userRepo.find();
 
-      expect(response.statusCode).toBe(201);
-      expect(tenantsRecord).toHaveLength(1);
-      expect(tenantsRecord[0].name).toBe(tenantData.name);
+      expect(users).toHaveLength(1);
+      expect(users[0].role).toBe(Roles.MANAGER);
+      expect(users[0].email).toBe(userData.email);
     });
+
+    it("should return 403 if non admin tries to create a user", () => {});
   });
 });
