@@ -7,6 +7,7 @@ const RefreshTokenEntity = require("../../src/entity/RefreshToken.js");
 const TenantEntity = require("../../src/entity/Tenant.js");
 
 const AppDataSource = require("../../src/data-source.js");
+const Roles = require("../../src/constants/index.js");
 
 describe("Post /tenants", () => {
   let dataSource;
@@ -40,6 +41,8 @@ describe("Post /tenants", () => {
       // if This variable initialize outside the it block then they get error
       tenantRepo = dataSource.getRepository(TenantEntity);
 
+      const accessToken = jwks.token({ sub: `1`, role: Roles.ADMIN });
+
       const tenantData = {
         name: "tenant name",
         address: "tenant address",
@@ -47,6 +50,7 @@ describe("Post /tenants", () => {
 
       const response = await request(app)
         .post("/tenants/create")
+        .set("Cookie", [`accessToken=${accessToken}`])
         .send(tenantData);
 
       const tenantsRecord = await tenantRepo.find();
