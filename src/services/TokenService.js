@@ -3,7 +3,7 @@ const fs = require("fs");
 const path = require("path");
 const createHttpError = require("http-errors");
 
-const { REFRESH_TOKEN_SECRET } = require("../config");
+const { REFRESH_TOKEN_SECRET, PRIVATE_KEY } = require("../config");
 
 class TokenService {
   tokenRepository;
@@ -15,9 +15,16 @@ class TokenService {
     let privateKey;
     try {
       // return the buffer
-      privateKey = fs.readFileSync(
-        path.join(__dirname, `../../certs/private.pem`)
-      );
+      // privateKey = fs.readFileSync(
+      //   path.join(__dirname, `../../certs/private.pem`)
+      // );
+      if (!PRIVATE_KEY) {
+        const error = createHttpError(500, "Secret key is not set");
+        throw error;
+      }
+
+      // Now we take private key from env variables
+      privateKey = PRIVATE_KEY;
     } catch (err) {
       const error = createHttpError(500, "Error while reading the private key");
       throw error;
