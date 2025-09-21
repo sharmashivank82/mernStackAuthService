@@ -1,0 +1,22 @@
+name: CI
+on:
+  pull_request:
+    branches:
+      - main:
+
+  push:
+    branches:
+      - main:
+
+jobs:
+  build-and-test:
+    name: This job build the code
+    runs-on: ubuntu-latest
+    steps:
+      - uses: action/checkout@v3
+
+      - name: Install npm package
+        run: npm ci
+
+      - name: Build Project
+        run: npm run build
