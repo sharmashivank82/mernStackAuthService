@@ -15,16 +15,16 @@ class TokenService {
     let privateKey;
     try {
       // return the buffer
-      // privateKey = fs.readFileSync(
-      //   path.join(__dirname, `../../certs/private.pem`)
-      // );
-      if (!PRIVATE_KEY) {
-        const error = createHttpError(500, "Secret key is not set");
-        throw error;
-      }
+      privateKey = fs.readFileSync(
+        path.join(__dirname, `../../certs/private.pem`)
+      );
+      // if (!PRIVATE_KEY) {
+      //   const error = createHttpError(500, "Secret key is not set");
+      //   throw error;
+      // }
 
       // Now we take private key from env variables
-      privateKey = PRIVATE_KEY;
+      // privateKey = PRIVATE_KEY;
     } catch (err) {
       const error = createHttpError(500, "Error while reading the private key");
       throw error;
@@ -32,7 +32,7 @@ class TokenService {
 
     const accessToken = jwt.sign(payload, privateKey, {
       algorithm: "RS256",
-      expiresIn: "1h",
+      expiresIn: "1m",
       issuer: "auth-service", // who issue this token
     });
 

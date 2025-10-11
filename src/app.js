@@ -1,5 +1,6 @@
 const express = require("express");
 const cookieParser = require("cookie-parser");
+const cors = require("cors");
 const app = express();
 
 const AuthRouter = require("./router/authRouter");
@@ -10,6 +11,13 @@ const UserRouter = require("./router/userRouter");
 app.use(express.static("public", { dotfiles: "allow" }));
 app.use(express.json());
 app.use(cookieParser());
+app.use(
+  cors({
+    // todo: move to env file
+    origin: ["http://localhost:5173"],
+    credentials: true,
+  })
+);
 
 app.get("/", async (req, res) => {
   res.send("Welcome to the Auth Service");
