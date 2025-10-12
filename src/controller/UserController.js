@@ -22,6 +22,19 @@ class UserController {
       next(err);
     }
   }
+
+  async getAll(req, res, next) {
+    try {
+      const user = await this.userService.findAllUsers();
+      const updatedUser = [];
+      for (let i = 0; i < user.length; i++) {
+        updatedUser.push({ ...user[i], password: undefined });
+      }
+      res.status(200).json({ users: updatedUser });
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 module.exports = { UserController };

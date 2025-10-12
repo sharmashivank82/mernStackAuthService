@@ -24,4 +24,8 @@ router.post(
   (req, res, next) => userController.create(req, res, next)
 );
 
+router.get("/", [Authenticate, CanAccess([Roles.ADMIN])], (req, res, next) =>
+  userController.getAll(req, res, next)
+);
+
 module.exports = router;

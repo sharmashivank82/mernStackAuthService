@@ -1,6 +1,7 @@
 const createHttpError = require("http-errors");
 const Roles = require("../constants");
 const bcrypt = require("bcrypt");
+const Tenant = require("../entity/Tenant");
 
 class UserService {
   userRepository;
@@ -52,7 +53,13 @@ class UserService {
   async findById(id) {
     const user = await this.userRepository.findOne({
       where: { id: id },
+      relations: { tenant: true },
     });
+    return user;
+  }
+
+  async findAllUsers() {
+    const user = await this.userRepository.find();
     return user;
   }
 }
