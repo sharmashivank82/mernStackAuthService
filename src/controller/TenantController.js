@@ -15,6 +15,15 @@ class TenantController {
       next(err);
     }
   }
+
+  async getAll(req, res, next) {
+    try {
+      const tenantList = await this.tenantService.findAllTenants();
+      res.status(200).json({ data: tenantList });
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 module.exports = { TenantController };
