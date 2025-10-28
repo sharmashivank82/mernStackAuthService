@@ -58,9 +58,18 @@ class UserService {
     return user;
   }
 
-  async findAllUsers() {
-    const user = await this.userRepository.find();
-    return user;
+  async findAllUsers({ currentPage, perPage }) {
+    const queryBuilder = await this.userRepository.createQueryBuilder();
+    const result = await queryBuilder
+      .skip((currentPage - 1) * perPage)
+      .take(perPage)
+      .getManyAndCount();
+
+    // console.log(result);
+    return result;
+
+    // const user = await this.userRepository.find();
+    // return user;
   }
 }
 

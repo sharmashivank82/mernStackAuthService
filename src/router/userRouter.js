@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
 
+const ListUserValidator = require("../validator/list-user-validator");
+
 const { UserController } = require("../controller/UserController");
 
 const { UserService } = require("../services/UserService");
@@ -24,8 +26,11 @@ router.post(
   (req, res, next) => userController.create(req, res, next)
 );
 
-router.get("/", [Authenticate, CanAccess([Roles.ADMIN])], (req, res, next) =>
-  userController.getAll(req, res, next)
+router.get(
+  "/",
+  ListUserValidator,
+  [Authenticate, CanAccess([Roles.ADMIN])],
+  (req, res, next) => userController.getAll(req, res, next)
 );
 
 module.exports = router;

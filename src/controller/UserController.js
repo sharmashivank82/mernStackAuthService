@@ -1,3 +1,4 @@
+const { matchedData } = require("express-validator");
 const Roles = require("../constants");
 
 class UserController {
@@ -24,13 +25,19 @@ class UserController {
   }
 
   async getAll(req, res, next) {
+    const validatedQuery = await matchedData(req, { onlyValidData: true });
+    const { currentPage, perPage } = validatedQuery;
+
     try {
-      const user = await this.userService.findAllUsers();
+      const [user, count] = await this.userService.findAllUsers({
+        currentPage,
+        perPage,
+      });
       const updatedUser = [];
       for (let i = 0; i < user.length; i++) {
         updatedUser.push({ ...user[i], password: undefined });
       }
-      res.status(200).json({ users: updatedUser });
+      res.status(200).json({ users: updatedUser, count, currentPage, perPage });
     } catch (err) {
       next(err);
     }
