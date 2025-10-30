@@ -2,6 +2,7 @@ const createHttpError = require("http-errors");
 const Roles = require("../constants");
 const bcrypt = require("bcrypt");
 const Tenant = require("../entity/Tenant");
+const { Brackets } = require("typeorm");
 
 class UserService {
   userRepository;
@@ -58,18 +59,35 @@ class UserService {
     return user;
   }
 
-  async findAllUsers({ currentPage, perPage }) {
-    const queryBuilder = await this.userRepository.createQueryBuilder();
+  async findAllUsers({ currentPage, perPage, q, role }) {
+    const queryBuilder = await this.userRepository.createQueryBuilder("user");
+
+    if (q) {
+      const searchTerm = `%${q}%`;
+      queryBuilder.where(
+        new Brackets((qb) => {
+          qb.where("CONCAT(user.firstName, ' ', user.lastName) ILIKE :q", {
+            q: searchTerm,
+          }).orWhere("user.email ILIKE :q", { q: searchTerm });
+        })
+      );
+    }
+
+    if (role) {
+      queryBuilder.andWhere("user.role = :role", {
+        role: role,
+      });
+    }
+
+    console.log({ query: queryBuilder.getSql() });
+
     const result = await queryBuilder
       .skip((currentPage - 1) * perPage)
       .take(perPage)
+      .orderBy("user.id", "DESC")
       .getManyAndCount();
 
-    // console.log(result);
     return result;
-
-    // const user = await this.userRepository.find();
-    // return user;
   }
 }
 

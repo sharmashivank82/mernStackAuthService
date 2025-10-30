@@ -26,12 +26,14 @@ class UserController {
 
   async getAll(req, res, next) {
     const validatedQuery = await matchedData(req, { onlyValidData: true });
-    const { currentPage, perPage } = validatedQuery;
+    const { currentPage, perPage, q, role } = validatedQuery;
 
     try {
       const [user, count] = await this.userService.findAllUsers({
         currentPage,
         perPage,
+        q,
+        role,
       });
       const updatedUser = [];
       for (let i = 0; i < user.length; i++) {

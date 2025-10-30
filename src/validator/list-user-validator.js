@@ -1,6 +1,17 @@
 const { query } = require("express-validator");
 
 const listUserValidator = [
+  query("q")
+    .optional()
+    .trim()
+    .customSanitizer((value) => {
+      return value ? value : "";
+    }),
+  query("role")
+    .optional()
+    .customSanitizer((value) => {
+      return value ? value : "";
+    }),
   query("currentPage")
     .notEmpty()
     .escape()
