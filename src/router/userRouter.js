@@ -26,6 +26,13 @@ router.post(
   (req, res, next) => userController.create(req, res, next)
 );
 
+// Only Admin Can access this route you need to add Authenticate for Admin
+router.patch(
+  "/update/:id",
+  [Authenticate, CanAccess([Roles.ADMIN])],
+  (req, res, next) => userController.update(req, res, next)
+);
+
 router.get(
   "/",
   ListUserValidator,

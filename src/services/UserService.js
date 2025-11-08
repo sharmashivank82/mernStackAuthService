@@ -59,6 +59,13 @@ class UserService {
     return user;
   }
 
+  async findByIdAndUpdate(id, updatedData) {
+    const user = await this.userRepository.update(id, {
+      ...updatedData,
+    });
+    return user;
+  }
+
   async findAllUsers({ currentPage, perPage, q, role }) {
     const queryBuilder = await this.userRepository.createQueryBuilder("user");
 

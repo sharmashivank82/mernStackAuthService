@@ -24,6 +24,23 @@ class UserController {
     }
   }
 
+  async update(req, res, next) {
+    try {
+      const { firstName, lastName, email, role, tenantId } = req.body;
+      // we set tenantId: undefined because in user entity the field saved as a tenant name not a tenantId
+      const user = await this.userService.findByIdAndUpdate(req.params.id, {
+        firstName,
+        lastName,
+        email,
+        role,
+        tenant: tenantId ? { id: tenantId } : undefined,
+      });
+      res.status(200).json({ id: user.id });
+    } catch (err) {
+      next(err);
+    }
+  }
+
   async getAll(req, res, next) {
     const validatedQuery = await matchedData(req, { onlyValidData: true });
     const { currentPage, perPage, q, role } = validatedQuery;
