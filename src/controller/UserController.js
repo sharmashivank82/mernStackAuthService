@@ -33,7 +33,7 @@ class UserController {
         lastName,
         email,
         role,
-        tenant: tenantId ? { id: tenantId } : undefined,
+        tenant: tenantId ? { id: tenantId } : null,
       });
       res.status(200).json({ id: user.id });
     } catch (err) {
